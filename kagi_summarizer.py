@@ -49,16 +49,19 @@ async def get_summary(url):
     params = {"url": {url}, "summary_type": "summary", "engine": "agnes"}
     headers = {"Authorization": f"Bot {KAGI_TOKEN}"}
 
-    json_response = requests.get(
-        base_url, headers=headers, params=params, timeout=60
-    ).json()
-
-    formatted_response = f"""
+    try:
+        json_response = requests.get(
+            base_url, headers=headers, params=params, timeout=60
+        ).json()
+    
+        formatted_response = f"""
 [Click here for full article]({url})
 {json_response['data']['output'] or json_response['error']['msg']}
-    """
-
-    return formatted_response
+        """
+    
+        return formatted_response
+    except requests.exceptions.Timeout:
+        return "Kagi response took too long..."
 
 
 # Sync slash command to Discord.
