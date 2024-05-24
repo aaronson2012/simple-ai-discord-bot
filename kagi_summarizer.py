@@ -9,10 +9,12 @@ import os
 
 import discord
 
+import requests
+
 from dotenv import load_dotenv
 load_dotenv()
 
-from kagiapi import KagiClient
+KAGI_TOKEN = os.environ.get('KAGI_TOKEN')
 
 intents = discord.Intents.default()
 bot = discord.Client(intents=intents)
@@ -24,26 +26,38 @@ async def summarize(ctx, url: str):
     """
     The main bot entrypoint
     """
-    print('slash command is working')
 
     channel = ctx.channel
 
     if url is None:
         await channel.send('Please provide a url to summarize')
 
+    await ctx.response.defer()
     summary = await get_summary(url)
 
-    await channel.send(summary)
+    await ctx.followup.send(summary)
 
 async def get_summary(url):
     """
     Get the summary from Kagi
     """
-    print('summarizer')
 
-    kagi = KagiClient(os.environ.get('KAGI_TOKEN'))
-    result = kagi.summarize(url=url, engine="cecil")
-    return result["data"]["output"]
+    base_url = 'https://kagi.com/api/v0/summarize'
+    params = {
+        "url": {url},
+        "summary_type": "summary",
+        "engine": "agnes"
+    }
+    headers = {'Authorization': f'Bot {KAGI_TOKEN}'}
+
+    json_response = requests.get(base_url, headers=headers, params=params).json()
+
+    formatted_response = f"""
+[Click here for full article]({url})
+{json_response['data']['output'] or json_response['error']['msg']}
+    """
+
+    return formatted_response
 
 # Sync slash command to Discord.
 @bot.event
@@ -51,7 +65,6 @@ async def on_ready():
     """
     on_ready() syncs and updates the slash commands on the Discord server.
     """
-    print('on ready')
     await tree.sync()
 
 bot.run(os.environ.get('DISCORD_TOKEN'))
