@@ -46,7 +46,7 @@ async def get_summary(url):
     """
 
     base_url = "https://kagi.com/api/v0/summarize"
-    params = {"url": {url}, "summary_type": "summary", "engine": "agnes"}
+    params = {"url": url, "summary_type": "summary", "engine": "agnes"}
     headers = {"Authorization": f"Bot {KAGI_TOKEN}"}
 
     try:
@@ -56,7 +56,7 @@ async def get_summary(url):
     
         formatted_response = f"""
 [Click here for full article]({url})
-{json_response['data']['output'] or json_response['error']['msg']}
+{json_response.get('data', {}).get('output') or json_response.get('error', [{}])[0].get('msg')}
         """
     
         return formatted_response
