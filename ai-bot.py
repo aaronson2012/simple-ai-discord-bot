@@ -42,7 +42,7 @@ async def get_response(prompt):
     }
 
     data = {
-        "model": {AI_MODEL},  # Specify your desired model
+        "model": AI_MODEL,  # Specify your desired model
         "messages": [{"role": "user", "content": prompt}]
     }
 
