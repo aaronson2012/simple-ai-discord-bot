@@ -5,7 +5,7 @@ import aiohttp
 
 load_dotenv()
 
-OPENAI_API_URL = os.environ.get("OPENAI_API_KEY")
+OPENAI_API_URL = os.environ.get("OPENAI_API_URL")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 AI_MODEL = os.environ.get("AI_MODEL")
 
