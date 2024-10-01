@@ -1,19 +1,13 @@
-"""
-This is all of the code for a discord bot that will interface with the AI chatbot.
-
-invoke with `/ai`
-"""
-
 import os
-
 import discord
 from dotenv import load_dotenv
-from litellm import Chat
+import aiohttp
 
 load_dotenv()
 
-# Initialize the Litellm Chat instance
-chat = Chat()
+OPENAI_API_URL = os.environ.get("OPENAI_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+AI_MODEL = os.environ.get("AI_MODEL")
 
 intents = discord.Intents.default()
 bot = discord.Client(intents=intents)
@@ -39,15 +33,26 @@ async def ai(ctx, prompt: str):
 
 async def get_response(prompt):
     """
-    Get the response from Litellm
+    Get the response from OpenAI
     """
     
-    try:
-        # Using Litellm to generate the response
-        response = await chat.generate(prompt)
-        return response
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "model": {AI_MODEL},  # Specify your desired model
+        "messages": [{"role": "user", "content": prompt}]
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(OPENAI_API_URL, headers=headers, json=data) as response:
+            if response.status == 200:
+                json_response = await response.json()
+                return json_response['choices'][0]['message']['content']
+            else:
+                return f"Error: {response.status} - {await response.text()}"
 
 # Sync slash command to Discord.
 @bot.event
